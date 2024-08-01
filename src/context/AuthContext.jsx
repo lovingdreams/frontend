@@ -54,15 +54,19 @@ export const AuthProvider = ({children}) => {
             body: JSON.stringify({'refresh':authTokens?.refresh || 'token' })
         })
 
-        let data = await response.json()
+        let data = await response.json().then(resp => {
+            if (response.status === 200){
+                setAuthTokens(resp)
+                setUser(jwt_decode(resp.access))
+                localStorage.setItem('authTokens', JSON.stringify(resp))
+            }else{
+                logoutUser()
+            }
+        }).catch(err => {
+            console.log(err);
+        });
         
-        if (response.status === 200){
-            setAuthTokens(data)
-            setUser(jwt_decode(data.access))
-            localStorage.setItem('authTokens', JSON.stringify(data))
-        }else{
-            logoutUser()
-        }
+       
 
         if(loading){
             setLoading(false)
